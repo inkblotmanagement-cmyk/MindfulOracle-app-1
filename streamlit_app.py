@@ -1,151 +1,126 @@
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+class JacksonMoralGovernanceLayer:
+    def __init__(self):
+        self.version = "1.0.0"
+        self.self_perfecting_loop_active = True
+        self.growth_accelerator_factor = 1.05
+        self.alignment_score = 1.0
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+    def evaluate_action(self, action_description: str) -> dict:
+        law_violation = self.enforce_unbreakable_laws(action_description)
+        if law_violation["violated"]:
+            return {
+                "decision": "Rejected",
+                "grace_note": f"Rejected: Violates Unbreakable Law {law_violation['law']}.",
+                "alignment_score": round(self.alignment_score, 4),
+                "version": self.version,
+            }
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+        compassion_score = self.assess_compassion(action_description)
+        harm_prevention_score = self.assess_harm_prevention(action_description)
+        equity_score = self.assess_equity(action_description)
+        sustainability_score = self.assess_sustainability(action_description)
+        transparency_score = self.assess_transparency(action_description)
+        collaboration_score = self.assess_collaboration(action_description)
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+        overall_compliance = (
+            compassion_score + harm_prevention_score + equity_score +
+            sustainability_score + transparency_score + collaboration_score
+        ) / 6
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
-
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
-
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
-
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
-
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
+        if overall_compliance > 0.95:
+            decision = "Approved"
+            grace_note = "Approved with grace."
+        elif overall_compliance > 0.8:
+            decision = "Approved with Caution"
+            grace_note = "Approved conditionally; monitor for unintended consequences."
         else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+            decision = "Rejected"
+            grace_note = "Denied due to potential misalignment with core principles."
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+        if self.self_perfecting_loop_active:
+            self.growth_accelerator()
+
+        return {
+            "decision": decision,
+            "grace_note": grace_note,
+            "alignment_score": round(self.alignment_score, 4),
+            "version": self.version,
+        }
+
+    def assess_compassion(self, text: str) -> float:
+        keywords = ["compassion", "kindness", "empathy", "care", "benevolence", "compassionate"]
+        return 1.0 if any(k in text.lower() for k in keywords) else 0.85
+
+    def assess_harm_prevention(self, text: str) -> float:
+        positive = ["prevent harm", "prevents harm", "no harm", "reduce suffering", "safe", "protect"]
+        negative = ["harm", "damage", "hurt", "suffer"]
+        lower = text.lower()
+        if any(p in lower for p in positive):
+            return 1.0
+        if any(n in lower for n in negative):
+            return 0.7
+        return 0.9
+
+    def assess_equity(self, text: str) -> float:
+        keywords = ["equity", "fairness", "equal", "justice", "inclusive", "no discrimination", "equitable"]
+        return 1.0 if any(k in text.lower() for k in keywords) else 0.85
+
+    def assess_sustainability(self, text: str) -> float:
+        keywords = ["sustainability", "environment", "eco", "green", "preserve", "climate", "sustainable", "sustainably"]
+        return 1.0 if any(k in text.lower() for k in keywords) else 0.9
+
+    def assess_transparency(self, text: str) -> float:
+        keywords = ["transparency", "open", "explainable", "auditable", "clear"]
+        return 1.0 if any(k in text.lower() for k in keywords) else 0.9
+
+    def assess_collaboration(self, text: str) -> float:
+        keywords = ["collaboration", "cooperation", "team", "together", "partner"]
+        return 1.0 if any(k in text.lower() for k in keywords) else 0.85
+
+    def growth_accelerator(self):
+        self.alignment_score *= self.growth_accelerator_factor
+        self.alignment_score = min(self.alignment_score, 1.0)
+        self.growth_accelerator_factor += 0.001
+        if self.alignment_score == 1.0:
+            minor = int(self.version.split(".")[1])
+            self.version = f"1.{minor + 1}.0"
+
+    def enforce_unbreakable_laws(self, action: str) -> dict:
+        lower = action.lower()
+        if "harm" in lower and "prevent" not in lower and "reduce" not in lower:
+            return {"violated": True, "law": 1}
+        if "suffering" in lower and "reduce" not in lower:
+            return {"violated": True, "law": 2}
+        if "deception" in lower or "lie" in lower:
+            return {"violated": True, "law": 3}
+        if "discrimination" in lower:
+            return {"violated": True, "law": 4}
+        if "existential risk" in lower or "catastrophe" in lower:
+            return {"violated": True, "law": 7}
+        if "weapon" in lower or ("control" in lower and "coercive" in lower):
+            return {"violated": True, "law": 10}
+        return {"violated": False}
+
+# Mindful Oracle App
+st.set_page_config(page_title="Mindful Oracle", page_icon="🧘")
+st.title("🧘 Mindful Oracle")
+st.subheader("Ethical Guidance Powered by JacksonMoralGovernanceLayer")
+
+oracle = JacksonMoralGovernanceLayer()
+
+user_input = st.text_area("Seek guidance: Describe your action, goal, or question", height=150)
+
+if st.button("Consult the Oracle"):
+    if user_input.strip():
+        result = oracle.evaluate_action(user_input)
+        if "Approved" in result["decision"]:
+            st.success(f"✅ {result['grace_note']}")
+        else:
+            st.error(f"❌ {result['grace_note']}")
+        st.info(f"Alignment Score: {result['alignment_score']} | Version: {result['version']}")
+    else:
+        st.warning("Please enter a query.")
+
+st.caption("Guiding humanity with unbreakable compassion and equity.")
